@@ -5,11 +5,22 @@ const UserSchema = new mongoose.Schema({
     UserName: {
         type: String,
         unique: true,
-        required: true
+        required: true,
+        unique : true,
+        validate(value){
+            if(value<0){
+                throw new Error("Username cannot be empty")
+            }
+        }
     },
     Password: {
         type: String,
-        required: true
+        required: true,
+        validate(value){
+            if(value<0){
+                throw new Error("Password cannot be empty")
+            }
+        }
     }
 })
 

@@ -10,17 +10,22 @@ router.use(auth)
 
 router.get("/messages", (req, res) => {
     const response = []
-    const uids = []
     UserMessage.findOne({ u_id: new mongoose.Types.ObjectId(req.user._id) }).then((m) => {
         const m_id = m.messages
-     
+
+        if (m_id.length === 0) {
+            return res.send({
+                messages: response,
+                error: false
+            })
+        }
 
         var loop1 = new Promise((resolve, reject) => {
             m_id.forEach((element, index) => {
                 Message.findById(element.m_id).then((message) => {
+                    console.log(message)
                     response.push(message)
                     if (index === m_id.length - 1) {
-                        index
                         resolve()
                     }
                 }).catch((e) => {
@@ -30,33 +35,12 @@ router.get("/messages", (req, res) => {
             })
         })
 
-        var loop2 = new Promise((resolve, reject) => {
-            return User.find({}).then((users) => {
-                users.forEach((user , index) => {
-                    uids.push(user._id)
-                    if (index === users.length - 1) {
-                        index
-                        resolve()
-                    }
-                })
-            }).catch((e) => {
-                reject()
-            })
-        })
 
         loop1.then(() => {
-            loop2.then(() => {
 
-                res.send({
-                    messages: response,
-                    users: uids
-                })
-
-            }).catch(() => {
-                res.send({
-                    message: "Unknown error encountered",
-                    error: true
-                })
+            res.send({
+                messages: response,
+                error: false
             })
 
 
@@ -77,16 +61,22 @@ router.get("/messages", (req, res) => {
 
 router.get("/users", (req, res) => {
 
-    const users = null
+    const users = []
 
-    User.find().then((response) => {
+    User.find({}).then((response) => {
         response.forEach((user) => {
             const u = {
                 id: user._id,
-                uname: user.UserNmae
+                uname: user.UserName
             }
             users.push(u)
         })
+
+        res.send({
+            users: users,
+            error: false
+        })
+
     }).catch((e) => {
         res.send({
             message: "Unknown error encountered",
@@ -104,6 +94,48 @@ router.post("/sendMessage", (req, res) => {
         }
     })
     message.save().then((m) => {
+
+        if (req.body.taged.length === 0) {
+            User.find({}).then((response) => {
+                var loop = new Promise((resolve, reject) => {
+                    response.forEach((user, index) => {
+                        UserMessage.findOne({ u_id: mongoose.Types.ObjectId(user._id) }).then((response) => {
+                            response.messages.push({ m_id: m._id })
+                            response.save().then(() => {
+
+                            }).catch(() => {
+                                return res.send({
+                                    message: "Unknown error encountered",
+                                    error: true
+                                })
+                            })
+                        })
+                        if (index === response.length - 1) {
+                            resolve()
+                        }
+                    })
+                })
+
+                loop.then(() => {
+                    res.send({
+                        message: "Sent",
+                        error: false
+                    })
+                }).catch(() => {
+
+                })
+
+            }).catch((e) => {
+                return res.send({
+                    message: "Unknown error encountered",
+                    error: true
+                })
+            })
+
+            return null
+        }
+        req.body.taged.push(req.user._id)
+
         req.body.taged.forEach((id) => {
             console.log(id)
             UserMessage.findOne({ u_id: new mongoose.Types.ObjectId(id) }).then((um) => {

@@ -9,7 +9,7 @@ router.post("/signup", async (req, res) => {
     console.log("hey from signup")
     const user = new User(req.body)
     try {
-        const u = await User.findOne({ UserName: req.body.username })
+        const u = await User.findOne({ UserName: req.body.UserName })
         if (u) {
             return res.send({ message: "user already exists", error: true })
         }
@@ -40,7 +40,7 @@ router.post("/signup", async (req, res) => {
         })
     } catch (e) {
         console.log(e)
-        res.send({ message: "error while signing up", error: true })
+        res.send({ message: e , error: true })
     }
 })
 
@@ -62,11 +62,11 @@ router.post("/signin", async (req, res) => {
             })
 
         }).catch((e) => {
-            res.send({ message: "error while signing up", error: true })
+            res.send({ message: "error while signing in", error: true })
         })
     }
-    catch (err) {
-        res.send({ message: "error while signing up", error: true })
+    catch (e) {
+        res.send({ message: e , error: true })
     }
 })
 
