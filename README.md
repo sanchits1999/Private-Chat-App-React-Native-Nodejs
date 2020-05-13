@@ -1,2 +1,2 @@
-# Private-Chat-App-React-Native
+# Private-Chat-App-React-Native-Node
 
